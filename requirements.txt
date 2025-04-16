@@ -1,0 +1,6 @@
+asyncpg
+celery[redis]
+fastapi[standard]
+pydantic
+pydantic-settings
+sqlalchemy
