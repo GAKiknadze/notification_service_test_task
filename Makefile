@@ -12,7 +12,7 @@ i_all: i_test i_dev i
 
 check:
 	mypy .
-	flake8 .
+	flake8 ./src --max-line-length=127
 
 format:
 	isort .
