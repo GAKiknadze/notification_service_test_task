@@ -103,7 +103,23 @@ class NotificationService:
         return (notifications, total)
 
     @staticmethod
-    async def check_as_read(db: AsyncSession, _id: UUID) -> None:
+    async def mark_as_read(db: AsyncSession, _id: UUID) -> None:
         obj = await NotificationService.get(db, _id)
         obj.read_at = func.now()
+        await db.commit()
+
+    @staticmethod
+    async def set_status(db: AsyncSession, _id: UUID, status: ProcessingStatus) -> None:
+        obj = await NotificationService.get(db, _id)
+        obj.processing_status = status
+        await db.commit()
+
+    @staticmethod
+    async def add_ai_results(
+        db: AsyncSession, _id: UUID, category: str, confidence: float
+    ) -> None:
+        obj = await NotificationService.get(db, _id)
+        obj.category = category
+        obj.confidence = confidence
+        obj.processing_status = ProcessingStatus.COMPLETED
         await db.commit()
