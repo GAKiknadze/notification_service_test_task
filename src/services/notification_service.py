@@ -16,6 +16,7 @@ class NotificationService:
     ) -> Notification:
         obj = Notification(user_id=user_id, title=title, text=text)
         await db.add(obj)  # type:ignore[func-returns-value]
+        await db.commit()
         return obj
 
     @staticmethod
