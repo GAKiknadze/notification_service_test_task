@@ -1,0 +1,2 @@
+class NotificationNotFoundExc(Exception):
+    pass
