@@ -1,4 +1,5 @@
 asyncpg
+cachetools
 celery[redis]
 fastapi[standard]
 pydantic

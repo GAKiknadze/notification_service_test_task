@@ -44,14 +44,15 @@ class NotificationService:
         processing_status: ProcessingStatus | None = None,
         limit: int = 10,
         offset: int = 0,
-        is_read: bool = False,
+        is_read: bool | None = None,
     ) -> Tuple[Sequence[Notification], int]:
         query = select(Notification)
 
-        if is_read:
-            query = query.where(Notification.read_at.isnot(None))
-        else:
-            query = query.where(Notification.read_at.is_(None))
+        if is_read is not None:
+            if is_read:
+                query = query.where(Notification.read_at.isnot(None))
+            else:
+                query = query.where(Notification.read_at.is_(None))
 
         if user_id is not None:
             query = query.where(Notification.user_id == user_id)
@@ -116,10 +117,15 @@ class NotificationService:
 
     @staticmethod
     async def add_ai_results(
-        db: AsyncSession, _id: UUID, category: str, confidence: float
+        db: AsyncSession,
+        _id: UUID,
+        category: str | None = None,
+        confidence: float | None = None,
     ) -> None:
         obj = await NotificationService.get(db, _id)
-        obj.category = category
-        obj.confidence = confidence
+        if category is not None:
+            obj.category = category
+        if confidence is not None:
+            obj.confidence = confidence
         obj.processing_status = ProcessingStatus.COMPLETED
         await db.commit()
