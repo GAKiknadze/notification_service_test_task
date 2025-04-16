@@ -1,4 +1,4 @@
-# notification_service_test_task
+# Notification Service (Test task)
 
 ![Tests](https://github.com/GAKiknadze/notification_service_test_task/actions/workflows/python-package.yml/badge.svg)
 
