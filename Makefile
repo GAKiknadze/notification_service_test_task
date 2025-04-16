@@ -17,3 +17,6 @@ check:
 format:
 	isort .
 	black .
+
+test:
+	pytest ./tests -v
