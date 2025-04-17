@@ -1,25 +1,16 @@
 import uuid
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from .config import Config
 from .db import create_tables, init_engine
+from .exception_handlers import handle_any_exception, handle_notification_not_found
 from .exceptions import NotificationNotFoundExc
 from .logger import logger
-from .routes import notifications
+from .v1.routes import notifications
 
 app = FastAPI()
-
-# Объявление CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=Config.server.cors,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 @app.on_event("startup")
@@ -29,6 +20,16 @@ async def on_startup():
     await init_engine(Config.db.uri)
     await create_tables()
     logger.info("Server started on http://localhost:8000")
+
+
+# Объявление CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=Config.server.cors,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
@@ -62,53 +63,10 @@ async def log_requests(request: Request, call_next):
 
 
 # Подключение роутера уведомлений
-app.include_router(notifications.router, prefix="/notifications")
+app.include_router(notifications.router, prefix="/v1/notifications")
 
-
-@app.exception_handler(NotificationNotFoundExc)
-async def handle_notification_not_found(
-    req: Request, exc: NotificationNotFoundExc
-) -> JSONResponse:
-    """Обработчик исключения `NotificationNotFoundExc`
-
-    Аргументы:
-        req (Request): Объект запроса
-        exc (NotificationNotFoundExc): Объект вызванного исключения
-
-    Возвращает:
-        JSONResponse: Краткое описание ошибки
-    """
-    return JSONResponse(
-        content={"msg": "Notification not found"}, status_code=status.HTTP_404_NOT_FOUND
-    )
-
-
-@app.exception_handler(Exception)
-async def handle_any_exception(req: Request, exc: Exception) -> JSONResponse:
-    """Обработчик всех возникших исключений, не учтенных в других обработчиках
-
-    Аргументы:
-        req (Request): Объект запроса
-        exc (Exception): Объект вызванного исключения
-
-    Возвращает:
-        JSONResponse: Краткое описание ошибки
-    """
-    request_details = {
-        "url": str(req.url),
-        "method": req.method,
-        "headers": dict(req.headers),
-        "query_params": dict(req.query_params),
-        "path_params": req.path_params,
-    }
-
-    logger.opt(exception=exc).error(
-        "Unhandled exception occurred",
-        request=request_details,
-        error_type=type(exc).__name__,
-        error_message=str(exc),
-    )
-    return JSONResponse(
-        content={"msg": "Something wrong"},
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    )
+# Подключение обработчиков исключений
+app.add_exception_handler(
+    NotificationNotFoundExc, handle_notification_not_found  # type:ignore[arg-type]
+)
+app.add_exception_handler(Exception, handle_any_exception)

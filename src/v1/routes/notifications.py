@@ -4,7 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, Body, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..db import get_db
+from ...db import get_db
+from ...services.notification_service import NotificationService
+from ...tasks import notification_processing
 from ..schemas.notifications import (
     Notification,
     NotificationCreate,
@@ -12,8 +14,6 @@ from ..schemas.notifications import (
     NotificationsList,
     NotificationStatus,
 )
-from ..services.notification_service import NotificationService
-from ..tasks import notification_processing
 
 router = APIRouter()
 

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from ..models import ProcessingStatus
+from ...models import ProcessingStatus
 
 
 class NotificationCreate(BaseModel):
