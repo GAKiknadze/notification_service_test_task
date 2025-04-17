@@ -1,0 +1,21 @@
+db:
+  uri: "postgresql+asyncpg://postgres:postgres@postgres:5432/notification_db"
+
+cache:
+  uri: "redis://redis:6379/0"
+  max_content_size: 0
+  ttls:
+    "/v1/notifications/": 30
+    "/v1/notifications/{notification_id}": 60
+    "/v1/notifications/{notification_id}/status": 90
+
+broker:
+  uri: "redis://redis:6379/1"
+
+server:
+  cors: ["*"]
+
+logger:
+  path: "logs/app.json"
+  rotation: "10 MB"
+  level: "DEBUG"

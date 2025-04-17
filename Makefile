@@ -25,4 +25,4 @@ run_worker:
 	celery -A src:worker_app worker --pool=prefork --loglevel=info
 
 run_local:
-	python ./app.py
+	uvicorn src:rest_app --host 0.0.0.0 --port 8000 --no-access-log --log-level critical

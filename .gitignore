@@ -178,3 +178,7 @@ logs/
 
 # Sqlite
 *.sqlite
+
+# App configuration file
+
+configs/config.yaml

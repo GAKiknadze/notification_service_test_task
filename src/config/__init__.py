@@ -18,7 +18,7 @@ class _Config(BaseSettings):
     """Корневой класс конфигурации"""
 
     model_config = SettingsConfigDict(
-        yaml_file="config.yaml",
+        yaml_file="./configs/config.yaml",
         yaml_file_encoding="utf-8",
         extra="ignore",
     )
