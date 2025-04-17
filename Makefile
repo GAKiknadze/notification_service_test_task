@@ -22,7 +22,7 @@ test:
 	pytest ./tests -v
 
 run_worker:
-	celery -A src:worker_app --pool=asyncio --loglevel=info
+	celery -A src:worker_app worker --pool=prefork --loglevel=info
 
 run_local:
 	python ./app.py

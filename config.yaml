@@ -1,0 +1,13 @@
+db:
+  uri: "postgresql+asyncpg://postgres:postgres@localhost:5432"
+
+broker:
+  uri: "sqla+sqlite:///celerydb.sqlite"
+
+server:
+  cors: ["*"]
+
+logger:
+  path: "logs/app.json"
+  rotation: "10 MB"
+  level: "DEBUG"

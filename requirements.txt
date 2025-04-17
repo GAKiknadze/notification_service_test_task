@@ -1,7 +1,8 @@
+asgiref
 asyncpg
 cachetools
 celery[redis]
-fastapi[standard]
+fastapi[standard]==0.115.12
 loguru
 pydantic
 pydantic-settings
