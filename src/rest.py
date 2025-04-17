@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import Config
-from .db import init_db
+from .db import create_tables, init_engine
 from .exceptions import NotificationNotFoundExc
 from .logger import logger
 from .routes import notifications
@@ -26,7 +26,8 @@ app.add_middleware(
 async def on_startup():
     """Функция подготовки перед запуском FastApi-сервера"""
     logger.info("Initializing database")
-    await init_db(Config.db.uri)
+    await init_engine(Config.db.uri)
+    await create_tables()
     logger.info("Server started on http://localhost:8000")
 
 

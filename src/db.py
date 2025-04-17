@@ -15,16 +15,18 @@ engine: AsyncEngine
 
 
 @logger.catch
-async def init_db(uri: str, create_models: bool = False) -> None:
+async def init_engine(uri: str) -> None:
     """Инициализация AsyncEngine"""
     global engine
-
     engine = create_async_engine(uri, future=True)
 
-    if create_models:
-        """Создание таблиц в базе данных"""
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+
+@logger.catch
+async def create_tables() -> None:
+    """Создание таблиц в базе данных"""
+    global engine  # noqa: F824
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 @asynccontextmanager

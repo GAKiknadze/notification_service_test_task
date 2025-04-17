@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from celery import Celery, signals  # type:ignore[import-untyped]
 
 from .config import Config
-from .db import get_db, init_db
+from .db import get_db, init_engine
 from .exceptions import NotificationNotFoundExc
 from .logger import logger
 from .models import ProcessingStatus
@@ -19,7 +19,7 @@ app = Celery("notification", broker=Config.broker.uri)
 @signals.worker_process_init.connect
 def on_start(*args, **kwargs):
     """Процедуры запускаемые при инициализации воркера Celery"""
-    async_to_sync(init_db)(Config.db.uri)
+    async_to_sync(init_engine)(Config.db.uri)
 
 
 async def calculate(notification_id: UUID) -> None:
