@@ -1,5 +1,6 @@
 import uuid
 
+from aiocache import Cache  # type:ignore[import-untyped]
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,9 +9,19 @@ from .db import create_tables, init_engine
 from .exception_handlers import handle_any_exception, handle_notification_not_found
 from .exceptions import NotificationNotFoundExc
 from .logger import logger
+from .middlewares.cache import CacheMiddleware
 from .v1.routes import notifications
 
 app = FastAPI()
+
+
+# Подключение кэша к GET-эндпоинтам
+if Config.cache.uri is not None:
+    app.add_middleware(
+        CacheMiddleware,
+        cache=Cache.from_url(Config.cache.uri),
+        cached_endpoints=Config.cache.ttls,
+    )
 
 
 @app.on_event("startup")

@@ -8,6 +8,7 @@ from pydantic_settings import (
 )
 
 from .broker import BrokerConfig
+from .cache import CacheConfig
 from .db import DBConfig
 from .logger import LoggerConfig
 from .server import ServerConfig
@@ -23,6 +24,7 @@ class _Config(BaseSettings):
     )
 
     db: DBConfig
+    cache: CacheConfig
     broker: BrokerConfig
     server: ServerConfig
     logger: LoggerConfig

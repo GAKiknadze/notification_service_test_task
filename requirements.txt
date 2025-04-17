@@ -1,6 +1,6 @@
 asgiref
 asyncpg
-cachetools
+aiocache[redis]
 celery[redis]
 fastapi[standard]==0.115.12
 loguru

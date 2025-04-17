@@ -1,3 +1,5 @@
+aiocache
+fastapi
 flake8
 loguru
 pytest
