@@ -23,6 +23,7 @@ async def create_notification(
     data: Annotated[NotificationCreate, Body()],
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> Notification:
+    """Создать уведомление"""
     async with session as db:
         obj = await NotificationService.create(db, **data.model_dump())
     notification_processing.delay(obj.id)
@@ -34,6 +35,7 @@ async def get_notifications_list(
     filters: Annotated[NotificationFilters, Query()],
     session: Annotated[AsyncSession, Depends(get_db)],
 ) -> NotificationsList:
+    """Получить список уведомлений по фильтрам"""
     async with session as db:
         objects, count = await NotificationService.get_list(db, **filters.model_dump())
     return NotificationsList(
@@ -50,6 +52,7 @@ async def get_notifications_list(
 async def get_notification_by_id(
     notification_id: UUID, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Notification:
+    """Получить уведомление по идентификатору"""
     async with session as db:
         obj = await NotificationService.get(db, notification_id)
     return Notification.model_validate(obj)
@@ -63,6 +66,7 @@ async def get_notification_by_id(
 async def get_notification_status_by_id(
     notification_id: UUID, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> NotificationStatus:
+    """Получить статус обработки уведомления"""
     async with session as db:
         obj = await NotificationService.get(db, notification_id)
     return NotificationStatus(status=obj.processing_status)
@@ -76,6 +80,7 @@ async def get_notification_status_by_id(
 async def mark_notification_as_read(
     notification_id: UUID, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Response:
+    """Пометить уведомление прочитанным"""
     async with session as db:
         await NotificationService.mark_as_read(db, notification_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

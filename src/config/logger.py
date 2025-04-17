@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 
 
 class LoggerConfig(BaseModel):
+    """Конфигурация логгирования"""
+
     path: str = Field(default="logs/app.json")
     rotation: str = Field(default="10 MB")
     level: Literal[

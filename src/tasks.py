@@ -12,15 +12,22 @@ from .models import ProcessingStatus
 from .services.ai_service import AIService
 from .services.notification_service import NotificationService
 
+# Инициализация приложения Celery
 app = Celery("notification", broker=Config.broker.uri)
 
 
 @signals.worker_process_init.connect
 def on_start(*args, **kwargs):
+    """Процедуры запускаемые при инициализации воркера Celery"""
     async_to_sync(init_db)(Config.db.uri)
 
 
 async def calculate(notification_id: UUID) -> None:
+    """Логика задачи по категоризации уведомления на основе ключевых слов
+
+    Аргументы:
+        notification_id (UUID): Идентификатор уведомления
+    """
     logger.bind(notification_id=notification_id).debug("Start of processing")
     async with get_db() as db:
         try:
@@ -49,4 +56,9 @@ async def calculate(notification_id: UUID) -> None:
 
 @app.task
 def notification_processing(notification_id: UUID) -> None:
+    """Задача (Синхронная обертка) по категоризации уведомления на основе ключевых слов
+
+    Аргументы:
+        notification_id (UUID): Идентификатор уведомления
+    """
     async_to_sync(calculate)(notification_id)

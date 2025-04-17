@@ -11,10 +11,23 @@ from ..models import Notification, ProcessingStatus
 
 
 class NotificationService:
+    """Класс для работы с уведомлениями в базе данных"""
+
     @staticmethod
     async def create(
         db: AsyncSession, user_id: UUID, title: str, text: str
     ) -> Notification:
+        """Записать уведомление в базу данных
+
+        Аргументы:
+            db (AsyncSession): Активная сессия базы данных
+            user_id (UUID): Идентификатор пользователя
+            title (str): Заголовок уведомления
+            text (str): Тело уведомления
+
+        Возвращает:
+            Notification: Объект уведомления
+        """
         obj = Notification(user_id=user_id, title=title, text=text)
         db.add(obj)
         await db.commit()
@@ -25,6 +38,18 @@ class NotificationService:
 
     @staticmethod
     async def get(db: AsyncSession, _id: UUID) -> Notification:
+        """Получить уведомление из базы данных
+
+        Аргументы:
+            db (AsyncSession): Активная сессия базы данных
+            _id (UUID): Идентификатор уведомления
+
+        Вызывает исключения:
+            NotificationNotFoundExc: Если уведомление с идентификатором не найдено
+
+        Возвращает:
+            Notification: Объект уведомления
+        """
         obj = await db.get(Notification, _id)
         if obj is None:
             logger.bind(notification_id=_id).warning("Notification not found")
@@ -52,6 +77,34 @@ class NotificationService:
         offset: int = 0,
         is_read: bool | None = None,
     ) -> Tuple[Sequence[Notification], int]:
+        """Получить список уведомлений на основе фильтров
+
+        Аргументы:
+            db (AsyncSession): Активная сессия базы данных
+            user_id (UUID | None, optional): Идентификатор пользователя. По умолчанию `None`.
+            title (str | None, optional): Заголовок уведомления. По умолчанию `None`.
+            title_strict (bool, optional): Если True поиск полного соответствия, иначе поиск подстроки. По умолчанию `True`.
+            text (str | None, optional): Текст уведомления. По умолчанию `None`.
+            created_at_start (datetime | None, optional): Время и дата начала создания уведомления. По умолчанию `None`.
+            created_at_end (datetime | None, optional): Время и дата завершения создания уведомления. По умолчанию `None`.
+            readed_at_start (datetime | None, optional): Время и дата начала прочтения уведомления. По умолчанию `None`.
+            readed_at_end (datetime | None, optional): Время и дата завершения прочтения уведомления. По умолчанию `None`.
+            category (str | None, optional): Категория уведомления. По умолчанию `None`.
+            category_strict (bool, optional): Если True поиск полного соответствия, иначе поиск подстроки.
+            По умолчанию `False`.
+            confidence_start (float | None, optional): Нижний порог оценки соответствия контента категории уведомления.
+            По умолчанию `None`.
+            confidence_end (float | None, optional): Верхний порог оценки соответствия контента категории уведомления.
+            По умолчанию `None`.
+            processing_status (ProcessingStatus | None, optional): Статус обработки уведомления. По умолчанию `None`.
+            limit (int, optional): Лимит записей в запросе. По умолчанию `10`.
+            offset (int, optional): Смещение по записям. По умолчанию `0`.
+            is_read (bool | None, optional): Отобразить только прочтенные уведомления. По умолчанию `None`.
+
+        Возвращает:
+            Tuple[Sequence[Notification], int]: Последовательность найденных уведомлений и общее количество найденных по
+            фильтрам записей
+        """
         query = select(Notification)
         used_filters: Dict[str, Any] = dict()
 
@@ -127,6 +180,15 @@ class NotificationService:
 
     @staticmethod
     async def mark_as_read(db: AsyncSession, _id: UUID) -> None:
+        """Пометить уведомление прочитанным
+
+        Аргументы:
+            db (AsyncSession): Активная сессия базы данных
+            _id (UUID): Идентификатор уведомления
+
+        Вызывает исключения:
+            NotificationNotFoundExc: Если уведомление с идентификатором не найдено
+        """
         obj = await NotificationService.get(db, _id)
         obj.read_at = func.now()
         await db.commit()
@@ -149,6 +211,17 @@ class NotificationService:
         category: str | None = None,
         confidence: float | None = None,
     ) -> None:
+        """Добавить результаты AI-обработки
+
+        Аргументы:
+            db (AsyncSession): Активная сессия базы данных
+            _id (UUID): Идентификатор уведомления
+            category (str | None, optional): Категория уведомления. По умолчанию `None`.
+            confidence (float | None, optional): Оценка соответствия категории к тексту уведомления. По умолчанию `None`.
+
+        Вызывает исключения:
+            NotificationNotFoundExc: Если уведомление с идентификатором не найдено
+        """
         obj = await NotificationService.get(db, _id)
         if category is not None:
             obj.category = category

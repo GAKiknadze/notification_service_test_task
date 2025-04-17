@@ -6,12 +6,15 @@ from .config import Config
 
 
 class InterceptHandler(logging.Handler):
+    """Обертка Loguru-логгера"""
+
     def emit(self, record):
         logger_opt = logger.opt(depth=6, exception=record.exc_info)
         logger_opt.log(record.levelname, record.getMessage())
 
 
 def setup_logger():
+    """Инициализация Loguru-логгера и заглушка встроенных логгеров"""
     logging.getLogger().handlers = [InterceptHandler()]
     logging.getLogger("uvicorn").handlers = []
     logging.getLogger("uvicorn.access").handlers = []

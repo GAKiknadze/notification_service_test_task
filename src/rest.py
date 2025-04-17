@@ -12,6 +12,7 @@ from .routes import notifications
 
 app = FastAPI()
 
+# Объявление CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=Config.server.cors,
@@ -23,6 +24,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def on_startup():
+    """Функция подготовки перед запуском FastApi-сервера"""
     logger.info("Initializing database")
     await init_db(Config.db.uri)
     logger.info("Server started on http://localhost:8000")
@@ -30,6 +32,19 @@ async def on_startup():
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
+    """Промежуточный слой, отвечающий за логирование обработки запросов.
+
+    - Генерирует уникальный идентификатор запроса
+    - Вставляет в дочерние логи идентификатор запроса
+    - Сигнализирует в логах о возникших ошибках
+
+    Аргументы:
+        request (Request): Объект запроса
+        call_next (Callable[[Any], Any]): Callable-объект для дальнейшей обработки запроса
+
+    Возвращает:
+        Response: Ответ запроса или исключение
+    """
     request_id = str(uuid.uuid4())
     with logger.contextualize(request_id=request_id):
         logger.info(f"Request: {request.method} {request.url}")
@@ -45,6 +60,7 @@ async def log_requests(request: Request, call_next):
             logger.debug("Request finished")
 
 
+# Подключение роутера уведомлений
 app.include_router(notifications.router, prefix="/notifications")
 
 
@@ -52,6 +68,15 @@ app.include_router(notifications.router, prefix="/notifications")
 async def handle_notification_not_found(
     req: Request, exc: NotificationNotFoundExc
 ) -> JSONResponse:
+    """Обработчик исключения `NotificationNotFoundExc`
+
+    Аргументы:
+        req (Request): Объект запроса
+        exc (NotificationNotFoundExc): Объект вызванного исключения
+
+    Возвращает:
+        JSONResponse: Краткое описание ошибки
+    """
     return JSONResponse(
         content={"msg": "Notification not found"}, status_code=status.HTTP_404_NOT_FOUND
     )
@@ -59,6 +84,15 @@ async def handle_notification_not_found(
 
 @app.exception_handler(Exception)
 async def handle_any_exception(req: Request, exc: Exception) -> JSONResponse:
+    """Обработчик всех возникших исключений, не учтенных в других обработчиках
+
+    Аргументы:
+        req (Request): Объект запроса
+        exc (Exception): Объект вызванного исключения
+
+    Возвращает:
+        JSONResponse: Краткое описание ошибки
+    """
     request_details = {
         "url": str(req.url),
         "method": req.method,
