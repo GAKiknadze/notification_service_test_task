@@ -16,7 +16,7 @@ class NotificationService:
         db: AsyncSession, user_id: UUID, title: str, text: str
     ) -> Notification:
         obj = Notification(user_id=user_id, title=title, text=text)
-        await db.add(obj)  # type:ignore[func-returns-value]
+        db.add(obj)
         await db.commit()
         logger.bind(notification_id=obj.id, user_id=user_id, title=title).info(
             "Notification has been created"

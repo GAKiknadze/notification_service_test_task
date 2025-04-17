@@ -1,4 +1,11 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Tuple, Type
+
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 
 from .broker import BrokerConfig
 from .db import DBConfig
@@ -8,7 +15,7 @@ from .server import ServerConfig
 
 class _Config(BaseSettings):
     model_config = SettingsConfigDict(
-        yaml_file="config.yml",
+        yaml_file="config.yaml",
         yaml_file_encoding="utf-8",
         extra="ignore",
     )
@@ -17,6 +24,17 @@ class _Config(BaseSettings):
     broker: BrokerConfig
     server: ServerConfig
     logger: LoggerConfig
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        return (YamlConfigSettingsSource(settings_cls),)
 
 
 Config = _Config()  # type:ignore[call-arg]

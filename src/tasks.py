@@ -1,6 +1,7 @@
 import traceback
 from uuid import UUID
 
+from asgiref.sync import async_to_sync
 from celery import Celery, signals  # type:ignore[import-untyped]
 
 from .config import Config
@@ -14,17 +15,12 @@ from .services.notification_service import NotificationService
 app = Celery("notification", broker=Config.broker.uri)
 
 
-@signals.worker_init.connect
-async def on_worker_start(sender, **kwargs):
-    await init_db(
-        Config.db.uri,
-        pool_size=Config.db.pool_size,
-        max_overflow=Config.db.max_overflow,
-    )
+@signals.worker_process_init.connect
+def on_start(*args, **kwargs):
+    async_to_sync(init_db)(Config.db.uri)
 
 
-@app.task
-async def notification_processing(notification_id: UUID) -> None:
+async def calculate(notification_id: UUID) -> None:
     logger.bind(notification_id=notification_id).debug("Start of processing")
     async with get_db() as db:
         try:
@@ -49,3 +45,8 @@ async def notification_processing(notification_id: UUID) -> None:
                 traceback.format_exc()
             )
     logger.bind(notification_id=notification_id).debug("End of processing")
+
+
+@app.task
+def notification_processing(notification_id: UUID) -> None:
+    async_to_sync(calculate)(notification_id)

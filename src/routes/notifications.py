@@ -20,19 +20,22 @@ router = APIRouter()
 
 @router.post("/", response_model=Notification, status_code=status.HTTP_201_CREATED)
 async def create_notification(
-    data: Annotated[NotificationCreate, Body(embed=True)],
-    db: AsyncSession = Depends(get_db),
+    data: Annotated[NotificationCreate, Body()],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> Notification:
-    obj = await NotificationService.create(db, **data.model_dump())
+    async with session as db:
+        obj = await NotificationService.create(db, **data.model_dump())
     notification_processing.delay(obj.id)
     return Notification.model_validate(obj)
 
 
 @router.get("/", response_model=NotificationsList, status_code=status.HTTP_200_OK)
 async def get_notifications_list(
-    filters: Annotated[NotificationFilters, Query()], db: AsyncSession = Depends(get_db)
+    filters: Annotated[NotificationFilters, Query()],
+    session: Annotated[AsyncSession, Depends(get_db)],
 ) -> NotificationsList:
-    objects, count = await NotificationService.get_list(db, **filters.model_dump())
+    async with session as db:
+        objects, count = await NotificationService.get_list(db, **filters.model_dump())
     return NotificationsList(
         data=objects,  # type:ignore[arg-type]
         count=count,
@@ -45,9 +48,10 @@ async def get_notifications_list(
     "/{notification_id}", response_model=Notification, status_code=status.HTTP_200_OK
 )
 async def get_notification_by_id(
-    notification_id: UUID, db: AsyncSession = Depends(get_db)
+    notification_id: UUID, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Notification:
-    obj = await NotificationService.get(db, notification_id)
+    async with session as db:
+        obj = await NotificationService.get(db, notification_id)
     return Notification.model_validate(obj)
 
 
@@ -57,9 +61,10 @@ async def get_notification_by_id(
     status_code=status.HTTP_200_OK,
 )
 async def get_notification_status_by_id(
-    notification_id: UUID, db: AsyncSession = Depends(get_db)
+    notification_id: UUID, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> NotificationStatus:
-    obj = await NotificationService.get(db, notification_id)
+    async with session as db:
+        obj = await NotificationService.get(db, notification_id)
     return NotificationStatus(status=obj.processing_status)
 
 
@@ -69,7 +74,8 @@ async def get_notification_status_by_id(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def mark_notification_as_read(
-    notification_id: UUID, db: AsyncSession = Depends(get_db)
+    notification_id: UUID, session: Annotated[AsyncSession, Depends(get_db)]
 ) -> Response:
-    await NotificationService.mark_as_read(db, notification_id)
+    async with session as db:
+        await NotificationService.mark_as_read(db, notification_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

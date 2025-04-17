@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -21,11 +23,26 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def on_startup():
-    await init_db(
-        Config.db.uri,
-        pool_size=Config.db.pool_size,
-        max_overflow=Config.db.max_overflow,
-    )
+    logger.info("Initializing database")
+    await init_db(Config.db.uri)
+    logger.info("Server started on http://localhost:8000")
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    request_id = str(uuid.uuid4())
+    with logger.contextualize(request_id=request_id):
+        logger.info(f"Request: {request.method} {request.url}")
+        try:
+            response = await call_next(request)
+            response.headers["X-Request-ID"] = request_id
+            logger.success(f"Response: {response.status_code}")
+            return response
+        except Exception as e:
+            logger.error(f"Error: {str(e)}")
+            raise
+        finally:
+            logger.debug("Request finished")
 
 
 app.include_router(notifications.router, prefix="/notifications")

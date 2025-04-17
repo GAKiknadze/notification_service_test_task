@@ -18,10 +18,9 @@ def setup_logger():
     logging.getLogger("fastapi").handlers = []
 
     logger.add(
-        Config.logger.path,
+        sink=Config.logger.path,
         rotation=Config.logger.rotation,
         level=Config.logger.level,
-        # format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {module}:{function} | {extra} | {message}",
         enqueue=True,
         serialize=True,
     )

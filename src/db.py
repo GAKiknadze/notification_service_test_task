@@ -1,38 +1,39 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from .logger import logger
+from .models import Base
 
-AsyncSessionLocal: sessionmaker[AsyncSession]  # type:ignore[type-var]
+engine: AsyncEngine
 
 
 @logger.catch
-def init_db(uri: str, **kwargs) -> None:
-    global AsyncSessionLocal
+async def init_db(uri: str, create_models: bool = False) -> None:
+    global engine
 
-    async_engine = create_async_engine(uri, echo=True, future=True)
+    engine = create_async_engine(uri, future=True)
 
-    AsyncSessionLocal = sessionmaker(
-        bind=async_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autocommit=False,
-        autoflush=False,
-        **kwargs
-    )  # type:ignore[call-overload]
+    if create_models:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
 
 
 @asynccontextmanager
-async def get_db() -> AsyncGenerator[AsyncSession]:
-    global AsyncSessionLocal  # noqa: F824
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        except Exception as exc:
-            await session.rollback()
-            raise exc
-        finally:
-            await session.close()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    global engine  # noqa: F824
+    local_session = async_sessionmaker(
+        engine,
+        autocommit=False,
+        autoflush=True,
+        expire_on_commit=False,
+        class_=AsyncSession,
+    )
+    async with local_session() as session:
+        yield session

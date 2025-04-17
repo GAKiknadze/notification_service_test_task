@@ -20,7 +20,7 @@ class Notification(BaseModel):
     title: str = Field()
     text: str = Field()
     created_at: datetime = Field()
-    read_at: datetime = Field()
+    read_at: datetime | None = Field(default=None)
     category: str | None = Field(default=None)
     confidence: float | None = Field(default=None)
     processing_status: ProcessingStatus = Field()
