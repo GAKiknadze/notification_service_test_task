@@ -1,6 +1,6 @@
 import uuid
 
-from aiocache import Cache  # type:ignore[import-untyped]
+from aiocache import Cache
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 

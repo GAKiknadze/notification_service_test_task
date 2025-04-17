@@ -1,7 +1,7 @@
 import re
 from typing import Dict, List, Tuple
 
-from aiocache import Cache  # type:ignore[import-untyped]
+from aiocache import Cache
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, _StreamingResponse
 

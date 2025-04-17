@@ -2,7 +2,7 @@ import traceback
 from uuid import UUID
 
 from asgiref.sync import async_to_sync
-from celery import Celery, signals  # type:ignore[import-untyped]
+from celery import Celery, signals
 
 from .config import Config
 from .db import get_db, init_engine

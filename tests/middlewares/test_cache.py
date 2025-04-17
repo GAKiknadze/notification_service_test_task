@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from aiocache import Cache  # type:ignore[import-untyped]
+from aiocache import Cache
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
