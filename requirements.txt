@@ -2,6 +2,8 @@ asyncpg
 cachetools
 celery[redis]
 fastapi[standard]
+loguru
 pydantic
 pydantic-settings
 sqlalchemy
+uvicorn

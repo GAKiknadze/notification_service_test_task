@@ -1,4 +1,5 @@
 flake8
+loguru
 pytest
 pytest-asyncio
 sqlalchemy

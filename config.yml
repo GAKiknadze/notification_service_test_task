@@ -9,3 +9,8 @@ broker:
 server:
   cors:
     - "*"
+
+logger:
+  path: "logs/app.json"
+  rotation: "10 MB"
+  level: "INFO"

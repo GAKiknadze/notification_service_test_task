@@ -23,3 +23,6 @@ test:
 
 run_worker:
 	celery -A src:worker_app --pool=asyncio --loglevel=info
+
+run_local:
+	python ./app.py

@@ -4,10 +4,13 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from .logger import logger
+
 AsyncSessionLocal: sessionmaker[AsyncSession]  # type:ignore[type-var]
 
 
-def init_db(uri: str) -> None:
+@logger.catch
+def init_db(uri: str, **kwargs) -> None:
     global AsyncSessionLocal
 
     async_engine = create_async_engine(uri, echo=True, future=True)
@@ -18,6 +21,7 @@ def init_db(uri: str) -> None:
         expire_on_commit=False,
         autocommit=False,
         autoflush=False,
+        **kwargs
     )  # type:ignore[call-overload]
 
 
