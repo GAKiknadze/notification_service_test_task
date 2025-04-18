@@ -1,10 +1,13 @@
 asgiref
 asyncpg
 aiocache[redis]
+aioredis<2.0
+redis>=4.0
 celery[redis]
 fastapi[standard]==0.115.12
 loguru
 pydantic
-pydantic-settings
+pydantic-settings[yaml]
+PyYAML>=6.0
 sqlalchemy
 uvicorn

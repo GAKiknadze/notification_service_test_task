@@ -1,8 +1,8 @@
 db:
-  uri: "postgresql+asyncpg://postgres:postgres@localhost:5432/notification_db"
+  uri: "sqlite+aiosqlite:///db.sqlite"
 
 cache:
-  uri: "redis://localhost:6379/0"
+  uri: "memory://"
   max_content_size: 0
   ttls:
     "/v1/notifications/": 30
@@ -10,7 +10,7 @@ cache:
     "/v1/notifications/{notification_id}/status": 300
 
 broker:
-  uri: "redis://localhost:6379/1"
+  uri: "sqla+sqlite:///broker.sqlite"
 
 server:
   cors: ["*"]

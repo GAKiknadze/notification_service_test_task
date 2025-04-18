@@ -1,4 +1,5 @@
 from typing import Tuple, Type
+import os
 
 from pydantic_settings import (
     BaseSettings,
@@ -18,7 +19,7 @@ class _Config(BaseSettings):
     """Корневой класс конфигурации"""
 
     model_config = SettingsConfigDict(
-        yaml_file="./configs/config.yaml",
+        yaml_file=os.getenv("CONFIG_FILE", "./configs/config.test.yaml"),
         yaml_file_encoding="utf-8",
         extra="ignore",
     )

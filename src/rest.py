@@ -10,7 +10,7 @@ from .exception_handlers import handle_any_exception, handle_notification_not_fo
 from .exceptions import NotificationNotFoundExc
 from .logger import logger
 from .middlewares.cache import CacheMiddleware
-from .v1.routes import notifications
+from .v1.routes import notifications, health
 
 app = FastAPI()
 
@@ -73,8 +73,9 @@ async def log_requests(request: Request, call_next):
             logger.debug("Request finished")
 
 
-# Подключение роутера уведомлений
+# Подключение роутеров
 app.include_router(notifications.router, prefix="/v1/notifications")
+app.include_router(health.router, prefix="/v1/health")
 
 # Подключение обработчиков исключений
 app.add_exception_handler(
