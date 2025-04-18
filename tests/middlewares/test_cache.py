@@ -10,7 +10,7 @@ from src.middlewares.cache import CacheMiddleware
 
 @pytest.fixture
 def test_app():
-    """Фикстура для создания тестового приложения с CacheMiddleware"""
+    """Создать тестовое приложение с подключенным CacheMiddleware"""
 
     def _test_app(cached_endpoints):
         app = FastAPI()
@@ -23,8 +23,8 @@ def test_app():
     return _test_app
 
 
-def test_cached_response(test_app):
-    """GET-запросы к кэшируемым эндпоинтам возвращают закэшированный ответ"""
+def test_get_cached_endpoint_returns_cached_response(test_app):
+    """Тест возврата закэшированного ответа для GET-запроса к кэшируемому эндпоинту"""
     cached_endpoints = {"/cached": 60}
     app = test_app(cached_endpoints)
     call_count = 0
@@ -44,8 +44,8 @@ def test_cached_response(test_app):
     assert response2.json() == {"count": 1}
 
 
-def test_query_params_cache_key(test_app):
-    """Разные query-параметры создают разные ключи кэша"""
+def test_different_query_params_create_different_cache_keys(test_app):
+    """Тест создания разных ключей кэша для запросов с разными query-параметрами"""
     cached_endpoints = {"/cached": 60}
     app = test_app(cached_endpoints)
     call_count = 0
@@ -66,8 +66,8 @@ def test_query_params_cache_key(test_app):
     assert response.json()["count"] == 2
 
 
-def test_path_params_cache_key(test_app):
-    """Параметры пути учитываются в ключе кэша"""
+def test_different_path_params_create_different_cache_keys(test_app):
+    """Тест создания разных ключей кэша для запросов с разными path-параметрами"""
     cached_endpoints = {"/cached/{id}": 60}
     app = test_app(cached_endpoints)
     call_count = 0
@@ -88,8 +88,8 @@ def test_path_params_cache_key(test_app):
     assert response.json()["count"] == 2
 
 
-def test_non_get_requests_not_cached(test_app):
-    """Некэшируемые методы (POST) не сохраняются"""
+def test_post_requests_are_not_cached(test_app):
+    """Тест отсутствия кэширования POST запросов"""
     cached_endpoints = {"/cached": 60}
     app = test_app(cached_endpoints)
     call_count = 0
@@ -107,8 +107,8 @@ def test_non_get_requests_not_cached(test_app):
     assert response.json()["count"] == 2
 
 
-def test_non_cached_endpoint(test_app):
-    """Некэшируемые эндпоинты игнорируются"""
+def test_non_cached_endpoint_always_executes(test_app):
+    """Тест выполнения запросов к некэшируемым эндпоинтам"""
     cached_endpoints = {"/cached": 60}
     app = test_app(cached_endpoints)
     call_count = 0
@@ -126,10 +126,9 @@ def test_non_cached_endpoint(test_app):
     assert response.json()["count"] == 2
 
 
-# Тест: ошибки при чтении/записи кэша не ломают запрос
 @pytest.mark.asyncio
-async def test_cache_errors_handled():
-    """Ошибки при чтении/записи кэша не ломают запрос"""
+async def test_cache_errors_do_not_break_request_handling():
+    """Тест обработки ошибок кэширования без прерывания запроса"""
     app = FastAPI()
     mock_cache = AsyncMock()
     mock_cache.get.side_effect = Exception("Read error")
